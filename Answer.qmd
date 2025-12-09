@@ -7,7 +7,9 @@ editor: visual
 ---
 
 # Implementation
+
 ```{r}
+#| echo: false
 howard_vfi_track <- function(alpha = 0.36,
                              beta  = 0.95,
                              delta = 0.05,
@@ -94,6 +96,7 @@ howard_vfi_track <- function(alpha = 0.36,
 ```
 
 # Sanity checks with full depreciation and log utility
+
 ```{r}
 alpha <- 0.36
 beta  <- 0.95
@@ -116,7 +119,8 @@ plot(seq_along(ss_diff), ss_diff, type = "b", log = "y",
      main = "Convergence of Howard algorithm (log error)")
 
 ```
-We note that under the basic calibration, the algorithm converges in one step. 
+
+We note that under the basic calibration, the algorithm converges in one step.
 
 ```{r}
 #| echo: false
@@ -125,8 +129,15 @@ plot(res$k_grid, res$k_policy, type = "l",
       xlab = "k", ylab = "k'(k)", main = "Policy function with Howard's improvement")
 
 ```
-We also plot the policy function and note that it has the expected concave shape.
-# Now to check the Euler equation on the gridpoints 
+
+We also plot the policy function and note that it has the expected concave shape. \# Now to check the Euler equation on the gridpoints
+```{r}
+alpha <- 0.36
+beta  <- 0.95
+delta <- 0.05
+theta <- 4
+```
+
 
 ```{r}
 #| echo: false
@@ -193,10 +204,6 @@ euler_errors_midpoints <- function(res, alpha, beta, delta, theta) {
   )
 }
 
-alpha <- 0.36
-beta  <- 0.95
-delta <- 0.05
-theta <- 4
 
 ## n_k = 20
 res20 <- howard_vfi_track(
@@ -225,6 +232,7 @@ plot(ee20$k_mid, ee20$rel_err, type = "l",
      main = "Euler equation relative errors |1-LHS/RHS| at midpoints (n_k = 20)")
 
 ```
+
 We see that the relative error is decreasing as the righthandside and the lefthandside get closer together, since presumably the utility function has less curvature at higher values of consumption. There is though a weird increase in the error at the end.
 
 ```{r}
@@ -238,8 +246,8 @@ lines(ee20$k_mid, ee20$rhs, lty = 2)
 legend("topright", legend = c("LHS = u'(c_t)", "RHS = beta u'(c_{t+1})(...)"),
        lty = c(1, 2), bty = "n")
 ```
-We see that the derivative of the euler equation is of the expected shape where $u'(c)>0$ but $u''(c)<0$. So the rate of change of the derivative is negative, hence the derivative is decreasing, we can also tell from the plot that the rate of change of decrease of the derivative is decreasing hence we have that $u'''(c) <0$. We also see that there is a weird drop at the end, this could be due to a bad choice of gridpoints or maybe something numerical going on. In general it would warrant further invetigation.
 
+We see that the derivative of the euler equation is of the expected shape where $u'(c)>0$ but $u''(c)<0$. So the rate of change of the derivative is negative, hence the derivative is decreasing, we can also tell from the plot that the rate of change of decrease of the derivative is decreasing hence we have that $u'''(c) <0$. We also see that there is a weird drop at the end, this could be due to a bad choice of gridpoints or maybe something numerical going on. In general it would warrant further invetigation.
 
 ## Now for thirty gridpoints
 
@@ -263,14 +271,58 @@ legend("topright", legend = c("LHS = u'(c_t)", "RHS = beta u'(c_{t+1})(...)"),
        lty = c(1, 2), bty = "n")
 
 ```
+
 Similar behaviour at 30 gridpoints, we still have the kink, but not the error is slowly increasing after bottoming out at k = 7, which is also an interesting development.
 
 ## Potential alternatives for evenly spaced grid.
+
 Instead of using an evenly spaces grid, it could be possible to, at each iteration after convergence, evaluation the policy function at a finer grid and then choose to keep the $n$ values from the finer grid where the errors are the largest for the next iteration of optimisation.
 
 # Why we cannot have next period capital too big.
-We have that the budget constraint is given by
-$$
+
+We have that the budget constraint is given by $$
 c_t + k_{t+1} = f(k_t) + (1-\delta)k_{t}
-$$
-If we have that $k_{t+1} \geq f(k_t) + (1-\delta)k_{t}$ then we must have that $c_{t} \leq 0$, which cannot be an optimum as it gives either strictly 0 utility or negative utility.
+$$ If we have that $k_{t+1} \geq f(k_t) + (1-\delta)k_{t}$ then we must have that $c_{t} \leq 0$, which cannot be an optimum as it gives either strictly 0 utility or negative utility.
+
+# Homotopy loops
+```{r}
+#| label: policy-sweep
+#| fig.width: 10      # in inches
+#| fig.height: 10
+#| out.width: 100%    # use full text width
+#| dpi: 300
+#| echo: false
+theta_vals <- seq(0, 4, by = 1)     # 0,1,2,3,4
+delta_vals <- seq(0, 1, by = 0.25)  # 0,0.25,0.5,0.75,1
+
+# Use more grid points so policy functions look smooth-ish
+n_k_sweep <- 50
+
+# Set up a grid of panels: rows = theta, cols = delta
+par(mfrow = c(length(theta_vals), length(delta_vals)),
+    mar = c(3, 3, 2, 1))  # smaller margins
+
+for (th in theta_vals) {
+  for (del in delta_vals) {
+    
+    # Solve with Howard's algorithm for this (theta, delta)
+    res_td <- howard_vfi_track(
+      alpha = alpha,
+      beta  = beta,
+      delta = del,
+      theta = th,
+      n_k   = n_k_sweep
+    )
+    
+    # Plot policy function k'(k)
+    plot(res_td$k_grid, res_td$k_policy,
+         type = "l",
+         xlab = "k",
+         ylab = "k'(k)",
+         main = bquote(theta == .(th) ~ "," ~ delta == .(del)))
+    
+    # 45° line for reference
+    abline(0, 1, lty = 2)
+  }
+}
+```

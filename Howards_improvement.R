@@ -84,6 +84,7 @@ howard_vfi_track <- function(alpha = 0.36,
   )
 }
 
+
 ###############################################################################
 ## Sanity checks with full depreciation and log utility
 ###############################################################################
@@ -106,13 +107,13 @@ plot(seq_along(ss_diff), ss_diff, type = "b", log = "y",
      ylab = "|k_ss^approx - k_ss^theory| (log scale)",
      main = "Convergence of Howard algorithm (log error)")
 
+
 # Bah Ok we converge after one iteration in the testing set this works really well
 
 
 # Quick sanity checks:
-plot(res_howard$k_grid, res_howard$k_policy, type = "l",
-      xlab = "k", ylab = "k'(k)", main = "Policy function with Howard's improvement")
-
+plot(res$k_grid, res$k_policy, type = "l",
+     xlab = "k", ylab = "k'(k)", main = "Policy function with Howard's improvement")
 
 ###############################################################################
 # Now to check the Euler equation on the gridpoints 
@@ -182,13 +183,16 @@ euler_errors_midpoints <- function(res, alpha, beta, delta, theta) {
   )
 }
 
+#########################################################
+# Non calibration parameters
+#########################################################
 alpha <- 0.36
 beta  <- 0.95
 delta <- 0.05
 theta <- 4
 
 ## n_k = 20
-res20 <- howard_vfi(
+res20 <- howard_vfi_track(
   alpha = alpha,
   beta  = beta,
   delta = delta,
@@ -203,7 +207,7 @@ cat("  Max |Euler residual|:", max(abs(ee20$resid)), "\n")
 cat("  Max log10 Euler error:", max(ee20$log10err), "\n\n")
 
 ## n_k = 30
-res30 <- howard_vfi(
+res30 <- howard_vfi_track(
   alpha = alpha,
   beta  = beta,
   delta = delta,
@@ -254,11 +258,48 @@ legend("topright", legend = c("LHS = u'(c_t)", "RHS = beta u'(c_{t+1})(...)"),
 
 # Same kind persists even with 3 gridpoints, maybe there's numerical instability?
 
+###############################################################################
+## Homotopy loops
+###############################################################################
 
-###################################
-# Plotting euler equation itself
-###################################
+# Base parameters (keep alpha, beta as in your PS)
+alpha <- 0.36
+beta  <- 0.95
 
+# Sequences to explore
+theta_vals <- seq(0, 4, by = 1)     # 0,1,2,3,4
+delta_vals <- seq(0, 1, by = 0.25)  # 0,0.25,0.5,0.75,1
+
+# Use more grid points so policy functions look smooth-ish
+n_k_sweep <- 50
+
+# Set up a grid of panels: rows = theta, cols = delta
+par(mfrow = c(length(theta_vals), length(delta_vals)),
+    mar = c(3, 3, 2, 1))  # smaller margins
+
+for (th in theta_vals) {
+  for (del in delta_vals) {
+    
+    # Solve with Howard's algorithm for this (theta, delta)
+    res_td <- howard_vfi_track(
+      alpha = alpha,
+      beta  = beta,
+      delta = del,
+      theta = th,
+      n_k   = n_k_sweep
+    )
+    
+    # Plot policy function k'(k)
+    plot(res_td$k_grid, res_td$k_policy,
+         type = "l",
+         xlab = "k",
+         ylab = "k'(k)",
+         main = bquote(theta == .(th) ~ "," ~ delta == .(del)))
+    
+    # 45° line for reference
+    abline(0, 1, lty = 2)
+  }
+}
 
 
       
