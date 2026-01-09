@@ -88,12 +88,7 @@ function analyze_results(output, consumption, investment)
         "Autocorrelation (Investment)" => ac_investment
     ]
 
-    # Convert to a tall table format
-    tall_data = [(metric, value) for (metric, value) in data]
-
-    # Define column headers
-    header = ["Metric", "Value"]
-
+    
     # Print the LaTeX table
     println("LaTeX Table:")
     pretty_table(data, backend=:latex, alignment=:lcr)
@@ -132,10 +127,11 @@ function main()
     output = output[burn_in+1:end]
     consumption = consumption[burn_in+1:end]
     investment = investment[burn_in+1:end]
-    plot(1:T, output, label="Output", lw=2, xlabel="Time", ylabel="Value", title="Simulation Results (T = 1000)")
+    plot(1:T, output, label="Output", lw=2, xlabel="Time", ylabel="Value", title="Simulation Results (T = 1000)", ylim=(0,:auto))
     plot!(1:T, consumption, label="Consumption", lw=2)
     plot!(1:T, investment, label="Investment", lw=2)
     savefig("simulation1k_plot.png")
+
     # Step 5: Analyze results
     analyze_results(output, consumption, investment)
 
@@ -146,10 +142,11 @@ function main()
     consumption = consumption[burn_in+1:end]
     investment = investment[burn_in+1:end]
     analyze_results(output, consumption, investment)
-    plot(1:T, output, label="Output", lw=2, xlabel="Time", ylabel="Value", title="Simulation Results (T = 1000)")
+    plot(1:T, output, label="Output", lw=2, xlabel="Time", ylabel="Value", title="Simulation Results (T = 1000)", ylim=(0,:auto))
     plot!(1:T, consumption, label="Consumption", lw=2)
     plot!(1:T, investment, label="Investment", lw=2)
     savefig("simulation100k_plot.png")
+
 
 end
 

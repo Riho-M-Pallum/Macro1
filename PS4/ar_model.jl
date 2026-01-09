@@ -45,6 +45,3 @@ function process_data(file_path::String)
     savefig("output_cycle.png")
     return model
 end
-
-# Call the function with the path to your CSV file
-model = process_data("A939RX0Q048SBEA.csv")
