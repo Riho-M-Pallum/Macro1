@@ -75,52 +75,28 @@ function analyze_results(output, consumption, investment)
     ac_consumption = StatsBase.autocor(consumption, [1])[1]
     ac_investment = StatsBase.autocor(investment, [1])[1]
 
-    # Prepare data for the LaTeX table
-    data = (
-        Metric = [
-            "Variance",
-            "Correlation (Output, Consumption)",
-            "Correlation (Output, Investment)",
-            "Correlation (Consumption, Investment)",
-            "Autocorrelation (Output)",
-            "Autocorrelation (Consumption)",
-            "Autocorrelation (Investment)"
-        ],
-        Output = [
-            var_output,
-            cor_output_consumption,
-            cor_output_investment,
-            "",
-            ac_output,
-            "",
-            ""
-        ],
-        Consumption = [
-            var_consumption,
-            "",
-            "",
-            cor_consumption_investment,
-            "",
-            ac_consumption,
-            ""
-        ],
-        Investment = [
-            var_investment,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ac_investment
-        ]
-    )
+    # Prepare data for the LaTeX table in tall format
+    data = [
+        "Variance (Output)" => var_output,
+        "Variance (Consumption)" => var_consumption,
+        "Variance (Investment)" => var_investment,
+        "Correlation (Output, Consumption)" => cor_output_consumption,
+        "Correlation (Output, Investment)" => cor_output_investment,
+        "Correlation (Consumption, Investment)" => cor_consumption_investment,
+        "Autocorrelation (Output)" => ac_output,
+        "Autocorrelation (Consumption)" => ac_consumption,
+        "Autocorrelation (Investment)" => ac_investment
+    ]
+
+    # Convert to a tall table format
+    tall_data = [(metric, value) for (metric, value) in data]
 
     # Define column headers
-    header = ["Metric", "Output", "Consumption", "Investment"]
+    header = ["Metric", "Value"]
 
     # Print the LaTeX table
     println("LaTeX Table:")
-    pretty_table(data, backend=:latex, alignment=:lcrr)
+    pretty_table(data, backend=:latex, alignment=:lcr)
 end
 
 # Main script

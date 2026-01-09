@@ -40,8 +40,9 @@ function process_data(file_path::String)
     # Plot the original data, trend, and cycle
     plot(1:length(output), output, label="Original Data", lw=2)
     plot!(1:length(trend), trend, label="Trend", lw=2)
-    plot!(1:length(cycle), cycle, label="Cycle (HP Filtered)", lw=2)
-    savefig("plot.png")
+    savefig("output_trend.png")
+    plot(1:length(cycle), cycle, label="Cycle (HP Filtered)", lw=2)
+    savefig("output_cycle.png")
     return model
 end
 

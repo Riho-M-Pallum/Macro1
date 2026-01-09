@@ -28,9 +28,9 @@ Calibration
 - δ = 0.05
 - θ = 4
 - α = 0.36
-- G = 1.04 (not based on previous problem set)
+- G = 1.01 (not based on previous problem set)
 """
-function time_iteration(kgrid, svals, Π; β = 0.95, G = 1.04, δ=0.05, α=0.36, θ = 4,
+function time_iteration(kgrid, svals, Π; β = 0.95, G = 1.01, δ=0.05, α=0.36, θ = 4,
                         maxit=10000, tol=1e-7, damp=1.0)
 
     N  = length(kgrid)
@@ -109,7 +109,7 @@ function time_iteration(kgrid, svals, Π; β = 0.95, G = 1.04, δ=0.05, α=0.36,
                         # Choose the point with smaller absolute residual
                         abs(rmin) < abs(rmax) ? kp_min : kp_max
                     end
-                    
+
                 # Optional damping
                 g_new[i, j] = damp * kp_star + (1 - damp) * g_old[i, j]
             end
